@@ -1,29 +1,36 @@
 var monq = require('../lib/index');
 
-var client = monq(process.env.MONGODB_URI || 'mongodb://localhost:27017/monq_example', { safe: true });
-var worker = client.worker(['foo']);
+var MongoClient = require('mongodb').MongoClient;
 
-worker.register({ uppercase: require('./uppercase') });
+MongoClient.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/monq_example', function(err, db) {
 
-worker.on('dequeued', function (data) {
-    console.log('Dequeued:');
-    console.log(data);
-});
+  var client = monq(db);
+  var worker = client.worker(['foo']);
 
-worker.on('failed', function (data) {
-    console.log('Failed:');
-    console.log(data);
-});
+  worker.register({ uppercase: require('./uppercase') });
 
-worker.on('complete', function (data) {
-    console.log('Complete:');
-    console.log(data);
-});
+  worker.on('dequeued', function (data) {
+      console.log('Dequeued:');
+      console.log(data);
+  });
 
-worker.on('error', function (err) {
-    console.log('Error:');
-    console.log(err);
-    worker.stop();
-});
+  worker.on('failed', function (data) {
+      console.log('Failed:');
+      console.log(data);
+  });
 
-worker.start();
+  worker.on('complete', function (data) {
+      console.log('Complete:');
+      console.log(data);
+  });
+
+  worker.on('error', function (err) {
+      console.log('Error:');
+      console.log(err);
+      worker.stop();
+  });
+
+  worker.start();
+
+})
+
